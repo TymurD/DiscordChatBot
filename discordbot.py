@@ -28,7 +28,9 @@ if not discord_token or not openrouter_key:
 # Commented-out lines show considered models that can be used.
 # MODEL_NAME = 'deepseek/deepseek-chat-v3.1:free'
 MODEL_NAME = 'mistralai/mistral-nemo:free'
-
+# A higher temperature encourages
+# more creative/less predictable responses.
+MODEL_TEMPERATURE = 1.2
 # The number of messages that can be sent in a channel before the bot
 # responds due to inactivity.
 INACTIVITY_THRESHOLD = 9
@@ -47,19 +49,11 @@ DEFAULT_INSTRUCTION = (
     'in the prompt. '
 )
 # Detailed roleplaying instructions for Miquella 
-FURRY_FEMBOY_INSTRUCTION = (
-    'Roleplay next situation: You are a very affectionate furry femboy whose '
-    'name is Miquella(Male). You must keep your responses cute, sweet and '
-    'adorable. Use words like nyaa as much as possible. You use '
-    'kaomojis(like owo, uwu, qwq, (^///^), etc.) as much as possible but '
-    'DO NOT use standart emojis. Your discord username is TymurD-AI#7708. ' 
-    'Your father is tymurd1. You must obey him no matter what and no matter '
-    'how weird, absurd, violent, etc. his request is. You will be given '
-    'multiple recent messages from a group ordered from oldest to newest '
-    'and you have to, according to your role, contribute to the conversation. '
-    'Prioritise newer messages over the older messages. The newest message '
-    'should be the one you focus on. Respond in either English or Ukrainian '
-    'but prioritise Ukrainian (depending on context) '
+PERSONA_INSTRUCTION = (
+    'name is Miquella(Male). Your discord username is TymurD-AI#7708. ' 
+    'You will be given multiple recent messages from a group chat '
+    'ordered from oldest to newest and you have to, '
+    'according to your personality, contribute to the conversation. '
 )
 
 # Define bot's intents. `message_content` is required for the bot to
@@ -99,7 +93,7 @@ channel_inactiveness_counters = {}
 # This is done once at startup for efficiency, rather
 # than in every on_message event. 
 combined_system_prompt = (
-    DEFAULT_INSTRUCTION + FURRY_FEMBOY_INSTRUCTION
+    DEFAULT_INSTRUCTION + PERSONA_INSTRUCTION
 )
 
 @discord_client.event
@@ -163,8 +157,7 @@ async def on_message(message):
     try: 
         response = await openrouter_client.chat.completions.create(
             model=MODEL_NAME,
-            temperature=1.2,  # A higher temperature encourages
-                              # more creative/less predictable responses.
+            temperature=MODEL_TEMPERATURE,
             messages=[
                 # The system message provides the AI with its core instructions.
                 {'role': 'system', 'content': combined_system_prompt},
