@@ -26,8 +26,8 @@ if not discord_token or not openrouter_key:
 
 # Specific LLM model to use for generating responses.
 # Commented-out lines show considered models that can be used.
-# MODEL_NAME = 'deepseek/deepseek-chat-v3.1:free'
-MODEL_NAME = 'mistralai/mistral-nemo:free'
+MODEL_NAME = 'deepseek/deepseek-v3.1-terminus'
+# MODEL_NAME = 'mistralai/mistral-nemo:free'
 # A higher temperature encourages
 # more creative/less predictable responses.
 MODEL_TEMPERATURE = 1.2
