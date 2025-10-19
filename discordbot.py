@@ -141,7 +141,7 @@ async def on_message(message):
         # Guard Clause: check if current user_persona_instruction is
         # empty to not cause issues by trying to send and empty message.
         if user_persona_instruction == '':
-            message.channel.send('No user behavior was provided')
+            await message.channel.send('No user behavior was provided')
             return
         await message.channel.send(user_persona_instruction)
         return
