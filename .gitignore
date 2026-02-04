@@ -1,1 +1,4 @@
 .env
+config.json
+bot_memory
+.venv
