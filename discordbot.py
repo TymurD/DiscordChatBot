@@ -40,7 +40,16 @@ persona_instruction = config['prompts']['persona_instruction']
 embeddings_model_name = config['model_settings']['embedding_model']
 db_path = config['database']['path']
 db_collection = config['database']['collection_name']
-random_trigger_chance = config['chat_settings']['random_response_chance_1_in_x']
+random_trigger_chance = (config['chat_settings']
+                               ['random_response_chance_1_in_x'])
+
+
+def save_config():
+    try:
+        with open('config.json', 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Failed to save config: {e}")
 
 
 class OpenRouterEmbeddingFunction(EmbeddingFunction):
@@ -67,9 +76,9 @@ chat_history = chroma_client.get_or_create_collection(
 )
 
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.message_content = True
-discord_client = commands.Bot(command_prefix='', intents=intents)
+discord_client = commands.Bot(command_prefix='/', intents=intents)
 openrouter_client = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=openrouter_key
@@ -122,9 +131,61 @@ async def get_relevant_context_async(query_text):
     return await asyncio.to_thread(get_relevant_context, query_text)
 
 
-combined_system_prompt = (
-    default_instruction + persona_instruction
-)
+def clean_string(input_string):
+    if not input_string:
+        return ''
+    cleaned_string = input_string.strip()
+    if not cleaned_string:
+        return ''
+    cleaned_string = cleaned_string[0].capitalize() + cleaned_string[1:]
+    if not cleaned_string.endswith('.'):
+        cleaned_string += '.'
+    cleaned_string += ' '
+    return cleaned_string
+
+
+@discord_client.tree.command(name="behavior",
+                             description="sets the bot's behavior")
+async def change_persona(interaction: discord.Interaction,
+                         behavior: str = None):
+    global persona_instruction
+    if behavior is None:
+        persona_instruction = ""
+        message = "Behavior reset to default."
+    else:
+        persona_instruction = clean_string(behavior)
+        message = persona_instruction
+    config['prompts']['persona_instruction'] = persona_instruction
+    save_config()
+    await interaction.response.send_message(message, ephemeral=True)
+
+
+@discord_client.tree.command(name="behavior_append",
+                             description="appends to the bot's behavior")
+async def append_persona(interaction: discord.Interaction, behavior: str):
+    global persona_instruction
+    persona_instruction += clean_string(behavior)
+    config['prompts']['persona_instruction'] = persona_instruction
+    save_config()
+    await interaction.response.send_message(persona_instruction,
+                                            ephemeral=True)
+
+
+@discord_client.tree.command(name="behavior_show",
+                             description="shows the bot's current behavior")
+async def show_persona(interaction: discord.Interaction):
+    if len(persona_instruction) >= 1900:
+        await interaction.response.send_message(
+            "Current persona instruction is too long to display.",
+            ephemeral=True)
+        return
+    if not persona_instruction:
+        await interaction.response.send_message(
+            "No persona instruction set.",
+            ephemeral=True)
+        return
+    await interaction.response.send_message(persona_instruction,
+                                            ephemeral=True)
 
 
 @discord_client.event
@@ -132,10 +193,16 @@ async def on_message(message):
     if message.author == discord_client.user:
         return
 
-    await add_memory_async(message.author,
-                           message.content,
-                           message.id,
-                           message.created_at.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d %H:%M"))
+    msg_timestamp = message.created_at.astimezone(
+        ZoneInfo("Europe/Kyiv")
+    ).strftime("%Y-%m-%d %H:%M")
+
+    await add_memory_async(
+        message.author,
+        message.content,
+        message.id,
+        msg_timestamp
+    )
 
     channel_id = message.channel.id
     message_content_lower = message.content.lower()
@@ -151,11 +218,17 @@ async def on_message(message):
     if not is_lucky_roll and not is_triggered_by_word:
         return
 
+    placeholder_message = await message.channel.send('...')
     print(f'Bot activated in {channel_id}, by word: {is_triggered_by_word}')
 
     messages = []
-    async for msg in message.channel.history(limit=recent_chat_history_limit):
-        formatted_message = f'{msg.author}: {msg.content} ({msg.created_at.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d %H:%M")})'
+    async for msg in message.channel.history(limit=recent_chat_history_limit + 1):
+        if msg.id == placeholder_message.id:
+            continue
+        msg_time = msg.created_at.astimezone(
+            ZoneInfo("Europe/Kyiv")
+        ).strftime("%Y-%m-%d %H:%M")
+        formatted_message = f'{msg.author}: {msg.content} ({msg_time})'
         messages.append(formatted_message)
     messages.reverse()
 
@@ -165,7 +238,8 @@ async def on_message(message):
 
     print('Got relevant long-term context')
 
-    placeholder_message = await message.channel.send('...')
+    all_context = relevant_messages + messages
+    formatted_messages = "\n".join(all_context)
 
     try:
         response = await openrouter_client.chat.completions.create(
@@ -174,26 +248,43 @@ async def on_message(message):
             messages=[
                 {
                     'role': 'system',
-                    'content': combined_system_prompt
+                    'content': default_instruction + persona_instruction
                 },
-                {'role': 'user',
-                 'content': f'Messages: {relevant_messages
-                                         + messages}'}
+                {
+                    'role': 'user',
+                    'content': f'Messages: {formatted_messages}'
+                }
             ],
         )
-        print(relevant_messages + messages)
+        print(formatted_messages)
 
         ai_response_content = response.choices[0].message.content
-        await placeholder_message.delete()
+        try:
+            await placeholder_message.delete()
+        except discord.NotFound:
+            await message.channel.send(
+                content='*Tries to speak but you hear only muffled sounds*'
+            )
+            return
         final_message = await message.channel.send(
             content=ai_response_content
         )
+        final_msg_time = final_message.created_at.astimezone(
+            ZoneInfo("Europe/Kyiv")
+        ).strftime("%Y-%m-%d %H:%M")
         await add_memory_async(final_message.author,
                                final_message.content,
                                final_message.id,
-                               final_message.created_at.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d %H:%M"))
+                               final_msg_time)
     except Exception as e:
         print(f"An error occurred with the API call: {e}")
+        try:
+            await placeholder_message.delete()
+        except discord.NotFound:
+            await message.channel.send(
+                content='*Tries to speak but you hear only muffled sounds*'
+            )
+            return
         await message.channel.send(content='Error occured')
 
 discord_client.run(discord_token)
