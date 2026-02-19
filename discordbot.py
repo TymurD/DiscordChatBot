@@ -138,7 +138,7 @@ def clean_string(input_string):
     if not cleaned_string:
         return ''
     cleaned_string = cleaned_string[0].capitalize() + cleaned_string[1:]
-    if not cleaned_string.endswith('.'):
+    if not cleaned_string.endswith(('.', '!', '?')):
         cleaned_string += '.'
     cleaned_string += ' '
     return cleaned_string
