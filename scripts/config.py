@@ -5,7 +5,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
-CONFIG_PATH = Path('config.json')
+CONFIG_PATH = Path(__file__).parent.parent / 'config.json'
 
 
 @dataclass
