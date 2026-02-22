@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -51,10 +52,15 @@ class BotConfig:
     def load(cls, path: Path = CONFIG_PATH) -> BotConfig:
         with path.open('r', encoding='utf-8') as f:
             data = json.load(f)
+        db_data = data['database']
+        resolved_db_path = str((path.parent / db_data['path']).resolve())
         return cls(
             model=ModelSettings(**data['model_settings']),
             chat=ChatSettings(**data['chat_settings']),
-            database=DatabaseSettings(**data['database']),
+            database=DatabaseSettings(
+                path=resolved_db_path,
+                collection_name=db_data['collection_name'],
+            ),
             trigger_words=data['trigger_words'],
             prompts=Prompts(**data['prompts']),
         )
@@ -75,7 +81,7 @@ class BotConfig:
                 "timezone": self.chat.timezone,
             },
             "database": {
-                "path": self.database.path,
+                "path": os.path.relpath(self.database.path, path.parent),
                 "collection_name": self.database.collection_name,
             },
             "trigger_words": self.trigger_words,
