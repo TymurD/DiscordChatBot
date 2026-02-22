@@ -124,6 +124,11 @@ async def on_message(message: discord.Message) -> None:
         await placeholder.delete()
     except Exception:
         logger.warning("Someone deleted the placeholder message")
+        await message.channel.send(
+            "*Tries to speak but you hear only muffled sounds*"
+        )
+        await bot.process_commands(message)
+        return
 
     for chunk in chunks:
         sent = await message.channel.send(chunk)
