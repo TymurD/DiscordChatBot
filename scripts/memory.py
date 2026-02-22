@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+from pathlib import Path
 from openai import OpenAI
 from chromadb import Documents, EmbeddingFunction, Embeddings
 import chromadb
@@ -29,6 +30,7 @@ class MemoryStore:
             api_key=api_key,
             model_name=config.model.embedding_model
         )
+        Path(config.database.path).mkdir(parents=True, exist_ok=True)
         client = chromadb.PersistentClient(path=config.database.path)
         self.collection = client.get_or_create_collection(
             name=config.database.collection_name,
