@@ -11,7 +11,7 @@
         "timezone": "Europe/Kyiv"
     },
     "database": {
-        "path": "../bot_memory",
+        "path": "bot_memory",
         "collection_name": "chat_history"
     },
     "trigger_words": [
