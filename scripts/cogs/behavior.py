@@ -42,7 +42,7 @@ class BehaviorCog(commands.Cog):
             reply = self.config.prompts.persona_instruction
 
         self.config.save_config()
-        logger.info("Persona set by %s", interaction.user)
+        logger.info("Persona set by %s\n%s", interaction.user, reply)
         await interaction.response.send_message(reply, ephemeral=True)
 
     @discord.app_commands.command(
@@ -54,7 +54,11 @@ class BehaviorCog(commands.Cog):
     ) -> None:
         self.config.prompts.persona_instruction += _clean_instruction(behavior)
         self.config.save_config()
-        logger.info("Persona appended by %s", interaction.user)
+        logger.info(
+            "Persona appended by %s\n%s",
+            interaction.user,
+            self.config.prompts.persona_instruction
+        )
         await interaction.response.send_message(
             self.config.prompts.persona_instruction, ephemeral=True
         )

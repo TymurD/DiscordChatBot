@@ -12,6 +12,7 @@ from config import BotConfig
 from memory import MemoryStore
 from ai_client import generate_response
 from cogs.behavior import setup as setup_behavior
+from cogs.temperature import setup as setup_temperature
 
 
 load_dotenv()
@@ -49,6 +50,7 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 @bot.event
 async def on_ready() -> None:
     await setup_behavior(bot, config)
+    await setup_temperature(bot, config)
     await bot.tree.sync()
     logger.info("Logged in as %s", bot.user)
 
@@ -85,6 +87,8 @@ async def on_message(message: discord.Message) -> None:
 
     placeholder = await message.channel.send("...")
 
+    logger.info("Placeholder message sent with ID %s", placeholder.id)
+
     recent: list[str] = []
     recent_ids: list[str] = []
     async for msg in message.channel.history(
@@ -99,10 +103,15 @@ async def on_message(message: discord.Message) -> None:
         recent_ids.append(str(msg.id))
     recent.reverse()
 
+    logger.info("Fetched %d recent messages for context", len(recent))
+
     relevant = await memory.query_async(
         message.content,
         exclude_ids=recent_ids
     )
+
+    logger.info("Retrieved %d relevant messages from memory", len(relevant))
+    logger.info("Generating response")
 
     try:
         chunks = await generate_response(
@@ -120,8 +129,11 @@ async def on_message(message: discord.Message) -> None:
         await bot.process_commands(message)
         return
 
+    logger.info("Generated response in %d chunks", len(chunks))
+
     try:
         await placeholder.delete()
+        logger.info("Placeholder message deleted")
     except Exception:
         logger.warning("Someone deleted the placeholder message")
         await message.channel.send(
