@@ -32,9 +32,22 @@ async def generate_response(
         client: AsyncOpenAI,
 ) -> list[str]:
     all_context = "\n".join(relevant_context + recent_context)
+    
+    web_plugin = {
+        "id": "web",
+        "engine": config.web_plugin.engine,
+        "max_results": config.web_plugin.max_results,
+    }
+    
+    enabled_plugins = []
+    if config.web_plugin.enabled:
+        enabled_plugins.append(web_plugin)
 
     response = await client.chat.completions.create(
         model=config.model.chat_model,
+        extra_body={
+            "plugins": enabled_plugins,
+        },
         temperature=config.model.temperature,
         messages=[
             {

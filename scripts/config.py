@@ -15,6 +15,12 @@ class ModelSettings:
     temperature: float
     embedding_model: str
 
+@dataclass
+class WebPluginSettings:
+    enabled: bool
+    engine: str
+    max_results: int
+
 
 @dataclass
 class ChatSettings:
@@ -43,9 +49,10 @@ class Prompts:
 @dataclass
 class BotConfig:
     model: ModelSettings
+    web_plugin: WebPluginSettings
     chat: ChatSettings
     database: DatabaseSettings
-    trigger_words: list
+    trigger_words: list[str]
     prompts: Prompts
 
     @classmethod
@@ -56,6 +63,7 @@ class BotConfig:
         resolved_db_path = str((path.parent / db_data['path']).resolve())
         return cls(
             model=ModelSettings(**data['model_settings']),
+            web_plugin=WebPluginSettings(**data['web_plugin_settings']),
             chat=ChatSettings(**data['chat_settings']),
             database=DatabaseSettings(
                 path=resolved_db_path,
@@ -71,6 +79,11 @@ class BotConfig:
                 "chat_model": self.model.chat_model,
                 "temperature": self.model.temperature,
                 "embedding_model": self.model.embedding_model,
+            },
+            "web_plugin_settings": {
+                "enabled": self.web_plugin.enabled,
+                "engine": self.web_plugin.engine,
+                "max_results": self.web_plugin.max_results,
             },
             "chat_settings": {
                 "history_limit": self.chat.history_limit,
