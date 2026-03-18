@@ -5,3 +5,4 @@ bot_memory
 .python-version
 __pycache__/
 *.py[cod]
+*$py.class
