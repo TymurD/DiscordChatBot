@@ -59,9 +59,11 @@ class BehaviorCog(commands.Cog):
             interaction.user,
             self.config.prompts.persona_instruction
         )
-        await interaction.response.send_message(
-            self.config.prompts.persona_instruction, ephemeral=True
-        )
+        if len(self.config.prompts.persona_instruction) > DISCORD_MAX_MESSAGE_LENGTH:
+            reply = "Persona updated but is too long to display."
+        else:
+            reply = self.config.prompts.persona_instruction
+        await interaction.response.send_message(reply, ephemeral=True)
 
     @discord.app_commands.command(
         name='behavior_show',

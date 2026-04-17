@@ -1,11 +1,11 @@
 {
     "model_settings": {
-        "chat_model": "deepseek/deepseek-v3.2:online",
+        "chat_model": "deepseek/deepseek-v3.2",
         "temperature": 1.2,
         "embedding_model": "openai/text-embedding-3-small"
     },
     "web_plugin_settings": {
-        "enabled": true,
+        "enabled": false,
         "engine": "exa",
         "max_results": 1
     },
