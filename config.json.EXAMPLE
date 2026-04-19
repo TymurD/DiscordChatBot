@@ -17,7 +17,7 @@
         "max_response_tokens": 2500
     },
     "database": {
-        "path": "data/bot_memory",
+        "path": "bot_memory",
         "collection_name": "chat_history"
     },
     "trigger_words": [
