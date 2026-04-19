@@ -6,7 +6,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
-CONFIG_PATH = Path(__file__).parent.parent / 'config.json'
+CONFIG_PATH = Path(__file__).parent.parent / 'data' / 'config.json'
 
 
 @dataclass
@@ -93,7 +93,6 @@ class BotConfig:
                     self.chat.random_response_chance_1_in_x
                 ),
                 "timezone": self.chat.timezone,
-                "max_response_tokens": self.chat.max_response_tokens,
             },
             "database": {
                 "path": os.path.relpath(self.database.path, path.parent),
