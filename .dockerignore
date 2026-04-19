@@ -1,0 +1,8 @@
+.env
+config.json
+bot_memory
+.venv
+.python-version
+__pycache__/
+*.py[cod]
+*$py.class
