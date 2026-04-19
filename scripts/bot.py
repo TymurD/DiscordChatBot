@@ -13,6 +13,7 @@ from memory import MemoryStore
 from ai_client import generate_response
 from cogs.behavior import setup as setup_behavior
 from cogs.temperature import setup as setup_temperature
+from cogs.tokens_limit import setup as setup_tokens_limit
 
 
 load_dotenv()
@@ -51,6 +52,7 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 async def on_ready() -> None:
     await setup_behavior(bot, config)
     await setup_temperature(bot, config)
+    await setup_tokens_limit(bot, config)
     await bot.tree.sync()
     logger.info("Logged in as %s", bot.user)
 

@@ -13,7 +13,8 @@
         "history_limit": 10,
         "recent_history_limit": 40,
         "random_response_chance_1_in_x": 10,
-        "timezone": "Europe/Kyiv"
+        "timezone": "Europe/Kyiv",
+        "max_response_tokens": 2500
     },
     "database": {
         "path": "bot_memory",

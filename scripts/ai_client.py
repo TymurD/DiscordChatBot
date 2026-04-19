@@ -49,6 +49,7 @@ async def generate_response(
             "plugins": enabled_plugins,
         },
         temperature=config.model.temperature,
+        max_completion_tokens=config.chat.max_response_tokens,
         messages=[
             {
                 "role": "system",

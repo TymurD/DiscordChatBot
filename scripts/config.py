@@ -28,6 +28,7 @@ class ChatSettings:
     recent_history_limit: int
     random_response_chance_1_in_x: int
     timezone: str
+    max_response_tokens: int
 
     @property
     def tz(self) -> ZoneInfo:
@@ -92,6 +93,7 @@ class BotConfig:
                     self.chat.random_response_chance_1_in_x
                 ),
                 "timezone": self.chat.timezone,
+                "max_response_tokens": self.chat.max_response_tokens,
             },
             "database": {
                 "path": os.path.relpath(self.database.path, path.parent),
