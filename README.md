@@ -2,7 +2,7 @@
 # Discord chat bot
 Simple Discord bot that acts as a user.
 
-![coverage](https://img.shields.io/badge/coverage-0%-red)
+![coverage](https://img.shields.io/badge/coverage-0%25-red)
 ![build](https://img.shields.io/badge/build-failing-red)
 ![dev](https://img.shields.io/badge/dev-annoyed-red)
 
