@@ -6,3 +6,4 @@ bot_memory
 __pycache__/
 *.py[cod]
 *$py.class
+README.md
