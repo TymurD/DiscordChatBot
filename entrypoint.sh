@@ -15,7 +15,7 @@ else
 fi
 
 chown -R $USER_ID:$GROUP_ID /app/data
-chmod -R 755 /app/data
+chmod -R 775 /app/data
 
 umask 002
 
