@@ -66,7 +66,7 @@ services:
 networks: {}
 ```
 
-Populate your .env file with your secrets. Replace <apikey> with your actual keys.
+Populate your .env file with your secrets. Replace \<apikey\> with your actual keys.
 
 ```Env
 DISCORD_TOKEN=<apikey>
